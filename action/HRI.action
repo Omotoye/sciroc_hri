@@ -1,0 +1,8 @@
+# goal 
+uint8 mode
+string text
+---
+# result 
+bool result 
+---
+# feedback 

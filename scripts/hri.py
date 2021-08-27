@@ -40,7 +40,7 @@ class HRI:
         rospy.loginfo("Reached Server")
         goal = TtsGoal()
         goal.rawtext.text = self.text
-        goal.rawtext.lang_id = "NL"
+        goal.rawtext.lang_id = "en_GB"
         client.send_goal(goal, feedback_cb=self.tts_feedbackCb)
         client.wait_for_result()
         res = client.get_result()
@@ -52,3 +52,4 @@ class HRI:
 if __name__ == "__main__":
 
     rospy.init_node("sciroc_hri")
+
