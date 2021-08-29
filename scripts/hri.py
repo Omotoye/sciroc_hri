@@ -10,6 +10,11 @@ from pal_interaction_msgs.msg import TtsAction, TtsGoal
 # import hri action message
 from sciroc_hri.msg import HRIAction, HRIFeedback, HRIResult
 
+# import dialogflow packages
+import os
+import dialogflow
+from google.api_core.exceptions import InvalidArgument
+
 
 class HRI:
     def __init__(self, name):
@@ -17,6 +22,20 @@ class HRI:
         self._feedback = HRIFeedback()
         self._result = HRIResult()
         self._action_name = name
+        self.text_to_be_analysed = ""
+
+        # setting up dialogflow
+        os.environ[
+            "GOOGLE_APPLICATION_CREDENTIALS"
+        ] = "gentle-proton-252714-066b7ef02309.json"
+
+        self.DIALOGFLOW_PROJECT_ID = "gentle-proton-252714"
+        self.DIALOGFLOW_LANGUAGE_CODE = "en"
+        self.SESSION_ID = "sciroc_hri"
+        self.session_client = dialogflow.SessionsClient()
+        self.session = self.session_client.session_path(
+            self.DIALOGFLOW_PROJECT_ID, self.SESSION_ID
+        )
 
         # Initialize the hri_action_server to listen for goal from client
         self._as = actionlib.SimpleActionServer(
@@ -28,6 +47,19 @@ class HRI:
         self._as.start()
 
         self.text = ""
+
+    def call_dialogflow(self):
+        text_input = dialogflow.types.TextInput(
+            text=self.text_to_be_analysed, language_code=self.DIALOGFLOW_LANGUAGE_CODE
+        )
+        query_input = dialogflow.types.QueryInput(text=text_input)
+        try:
+            response = self.session_client.detect_intent(
+                session=self.session, query_input=query_input
+            )
+        except InvalidArgument:
+            raise
+        return response
 
     def tts_event(self, event):
         return {
@@ -71,6 +103,8 @@ class HRI:
             self._result.result = self.say_something()
 
         elif goal.mode == 1:
+            self.text_to_be_analysed = "Take Order"
+            response = self.call_dialogflow()
             # Take Order
             pass
 
