@@ -15,11 +15,14 @@ from sciroc_hri.msg import HRIAction, HRIFeedback, HRIResult
 import os
 import dialogflow
 from google.api_core.exceptions import InvalidArgument
-from dialogflow_ros import DialogflowClient
+from dialogflow_ros import DialogflowClient, DialogflowRequest
 from dialogflow_ros.msg import *
-
 import time
+from dialogflow_ros.msg import GetOrderAction
+import actionlib
+from std_msgs.msg import Empty
 
+client=None
 
 class HRI:
     def __init__(self, name):
@@ -47,15 +50,14 @@ class HRI:
         self.transcript = msg
 
     def call_dialogflow(self, text):
-        self.dr.query_text = text
-        ## TODO there should be some sort of while loop here to
-        # keep taking a response from dialogflow and sending the
-        # text from the customer until something happens.
-        resp = self.dc.detect_intent_text(self.dr)
-        self.text = resp.fulfillment_text
-        self.say_something()
-        self.dr.query_text = self.transcript
-        resp = self.dc.detect_intent_text(self.dr)
+        final_order_str=client()
+        
+        indx=final_order_str.find(":")
+        final_order_str=final_order_str[indx+1:]
+
+        order_list=final_order_str.split()
+
+        return order_list
 
     def say_something(self):
         client = actionlib.SimpleActionClient("tts/goal", TtsAction)
@@ -114,7 +116,9 @@ class HRI:
             self.text_to_be_analysed = "Take Order"
             response = self.call_dialogflow()
             # TODO this is the only place dialogflow is needed
-            # Take Order
+            # Take Orderù
+            self._result.result=True
+            self._result.order_list=response
 
         elif goal.mode == 2:
             # Greet
@@ -140,3 +144,6 @@ class HRI:
 if __name__ == "__main__":
 
     rospy.init_node("sciroc_hri")
+    g=HRI()
+    client = actionlib.SimpleActionClient('requested_by_hri', GetOrderAction)
+    rospy.spin()
