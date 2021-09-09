@@ -9,9 +9,13 @@ project(sciroc_hri)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  roscpp
   actionlib 
   actionlib_msgs
   message_generation
+  pal_interaction_msgs
+  dialogflow_ros
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
