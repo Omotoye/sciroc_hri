@@ -9,7 +9,7 @@ project(sciroc_hri)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  rocpp
+  roscpp
   actionlib 
   actionlib_msgs
   message_generation
